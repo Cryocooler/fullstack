@@ -2,18 +2,31 @@ import React, { useState, useEffect } from 'react'
 import axios from 'axios'
 
 
+const Filter = ( {input, onChange} ) => {
+
+
+  return(
+    <div>
+      find countries
+      <input value = {input} onChange = {onChange} />
+    </div>
+  )
+}
+
+
+
+
+
 const Countries = ({countries, appliedFilter}) => {
   //console.log('passed countries', countries)
 
-  const sliceCountry = 
-    countries.filter(country => country.name.common.toLowerCase()
-      .includes(appliedFilter.toLowerCase()))
+ 
   
-  const countryCount = sliceCountry.map(country => country.name.common).length
+  const countryCount = countries.map(country => country.name.common).length
   //const countryLang = sliceCountry.map(country => country.languages)
   
-  const Country = sliceCountry
-  const langs = Country.map(country => country.languages)
+
+  const langs = countries.map(country => country.languages)
   console.log('langs',typeof(langs[0]))
 
 
@@ -40,7 +53,7 @@ const Countries = ({countries, appliedFilter}) => {
 
     return(
       <div>
-          {sliceCountry.map(country => 
+          {countries.map(country => 
             <div> {country.name.common}
             <button onClick = {handleClick}>show</button> </div> )}
             
@@ -53,7 +66,7 @@ const Countries = ({countries, appliedFilter}) => {
     return(
       
         <div>
-         {sliceCountry.map(country => 
+         {countries.map(country => 
          <div>
            <h1>{country.name.common}</h1>
            <div>capital {country.capital}</div>
@@ -108,13 +121,16 @@ const App = () =>  {
     setNewFilter(event.target.value)
   }
 
-
+  const filteredCountries = 
+    countries.filter(country => country.name.common.toLowerCase()
+    .includes(newFilter.toLowerCase()))
 
   return (
     <div>
-      find countries
-      <input value = {newFilter} onChange = {handleFilter}/>
-      <Countries countries = {countries} appliedFilter = {newFilter} />
+      
+      <Filter input = {newFilter} onChange = {handleFilter}/>
+      <Countries countries = {filteredCountries} />
+
     </div>
   )
 }
