@@ -34,10 +34,16 @@ const Countries = ({countries, appliedFilter}) => {
     )
   } else if (countryCount < 10 && countryCount > 1 )  {
     
+    const handleClick = () => {
+      console.log('hahahahah')
+    }
+
     return(
       <div>
           {sliceCountry.map(country => 
-            <div> {country.name.common} </div> )}
+            <div> {country.name.common}
+            <button onClick = {handleClick}>show</button> </div> )}
+            
         </div>
     
     )
@@ -80,7 +86,12 @@ const Countries = ({countries, appliedFilter}) => {
 const App = () =>  {
   const [countries, setCountries] = useState([])
   const [newFilter, setNewFilter] = useState('swi')
-
+  const [clicked, setClicked] = useState()
+  // If conditional needs to be in the app component. The countries array is filtered 
+  // based on the filter hook in app and passed to country component renderer. 
+  // There needs to be a button for switch case 2. Clicking the button changes the filter
+  // to the clicked country scope => case 3 of 1 country... or make a component for rendering
+  // a single country instead of if statements in the countries rendering?
   useEffect(() => {
     console.log('effect')
     axios
