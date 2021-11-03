@@ -43,9 +43,7 @@ const Countries = ({countries, appliedFilter}) => {
     )
 
   } else if (countryCount === 1) {
-      const InCountry = sliceCountry[0]
-      const flag = sliceCountry
-      console.log('flag',InCountry.flag)
+     
     return(
       
         <div>
