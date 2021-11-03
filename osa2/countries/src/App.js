@@ -17,12 +17,14 @@ const Filter = ( {input, onChange} ) => {
 
 
 
-const Countries = ({countries, appliedFilter}) => {
+const Countries = ({countries, appliedFilter, stateHandler}) => {
   //console.log('passed countries', countries)
 
- 
+  const filteredCountries = 
+    countries.filter(country => country.name.common.toLowerCase()
+    .includes(appliedFilter.toLowerCase()))
   
-  const countryCount = countries.map(country => country.name.common).length
+  const countryCount = filteredCountries.length
   //const countryLang = sliceCountry.map(country => country.languages)
   
 
@@ -48,14 +50,14 @@ const Countries = ({countries, appliedFilter}) => {
   } else if (countryCount < 10 && countryCount > 1 )  {
     
     const handleClick = () => {
-      console.log('hahahahah')
-    }
+      console.log('clicked')
+    }    
 
     return(
       <div>
-          {countries.map(country => 
+          {filteredCountries.map(country => 
             <div> {country.name.common}
-            <button onClick = {handleClick}>show</button> </div> )}
+            <button onClick = {() => stateHandler(country.name.common)}>show</button> </div> )}
             
         </div>
     
@@ -66,7 +68,7 @@ const Countries = ({countries, appliedFilter}) => {
     return(
       
         <div>
-         {countries.map(country => 
+         {filteredCountries.map(country => 
          <div>
            <h1>{country.name.common}</h1>
            <div>capital {country.capital}</div>
@@ -121,15 +123,18 @@ const App = () =>  {
     setNewFilter(event.target.value)
   }
 
-  const filteredCountries = 
-    countries.filter(country => country.name.common.toLowerCase()
-    .includes(newFilter.toLowerCase()))
+  
 
+ 
+
+ 
+
+  console.log('clicked state', clicked)
   return (
     <div>
       
       <Filter input = {newFilter} onChange = {handleFilter}/>
-      <Countries countries = {filteredCountries} />
+      <Countries countries = {countries} appliedFilter = {newFilter} stateHandler = {setNewFilter} />
 
     </div>
   )
