@@ -1,5 +1,21 @@
 import React, { useState, useEffect } from 'react'
 import axios from 'axios'
+import personService from './services/persons'
+
+
+const Notification = ({ message }) => {
+  if (message === null ) {
+    return null
+  }
+
+  return (
+    <div className = "success">
+      {message}
+    </div>
+  )
+}
+
+
 
 const Filter = ({input, handleChange}) =>
 {
@@ -13,7 +29,8 @@ const Filter = ({input, handleChange}) =>
   )
 }
 
-const PersonForm = ({ formTrigger, inputName, inputNumber, personChange, numberChange }) => {
+
+const PersonForm = ({ formTrigger, inputName, inputNumber, personChange, numberChange, handleExisting}) => {
 
   return(
     <div>
@@ -22,7 +39,7 @@ const PersonForm = ({ formTrigger, inputName, inputNumber, personChange, numberC
           name: <input value = {inputName} onChange = {personChange}/>
         </div>
         <div>
-          number: <input value = {inputNumber} onChange = {numberChange} />
+          number: <input value = {inputNumber} onChange = {numberChange}/>
         </div>
         <div>
           <button type="submit">add</button>
@@ -33,13 +50,14 @@ const PersonForm = ({ formTrigger, inputName, inputNumber, personChange, numberC
   )
 }
 
-const Persons = ({ persons, appliedFilter }) => {
+const Persons = ({ persons, appliedFilter, removePerson }) => {
   console.log('passed persons', persons.filter(person => person.name.toLowerCase().includes(appliedFilter.toLowerCase())))
   return(
      <div>
        {persons.filter(person => person.name.toLowerCase().includes(appliedFilter.toLowerCase())).map(person =>
           <div key = {person.name}> 
-          {person.name} {person.number} </div> )}
+          {person.name} {person.number}
+          <button onClick = {()=> removePerson(person.id)}> delete</button> </div> )}
      </div>
 
   )
@@ -51,20 +69,19 @@ const App = () => {
   const [ newName, setNewName ] = useState('')
   const [ newNumber, setNewNumber ] = useState('')
   const [ newFilter, setNewFilter ] = useState('')
+  const [ success, setSuccessMessage ] = useState(null)
   console.log('persons', persons)
   console.log('iftest', persons.map(person => person.name).includes('Arto Hellas'))
 
 
   useEffect(() => {
-    console.log('effect')
-    axios
-      .get('http://localhost:3001/persons')
-      .then(response => {
-        console.log('promise fulfilled')
-        setPersons(response.data)
-      })
-  }, [])
-  console.log('render', persons.length, 'persons')
+      personService
+      .getAll()
+      .then(initialPersons => {
+        setPersons(initialPersons)
+        })
+      }, [])
+    console.log('render', persons.length, 'persons')
 
 
   const handleNameChange = (event) => {
@@ -77,26 +94,58 @@ const App = () => {
     setNewName(event.target.value)
     const nameObject = {
       name : newName,
-      id : newName,
       number : newNumber
     }
-   
-    
     if (persons.map(person => person.name).includes(newName)) {
-      window.alert(`${newName} is already added to phonebook`)
+      window.confirm(`${newName} is already added to phonebook, do you want to relace the old number with a new one?`)
+      const updatedPerson = persons.find(p => p.name === newName)
+      const changedNumber = {...updatedPerson, number: newNumber}
+      
       setNewName('')
       setNewNumber('')
-    } else {
-      setPersons(persons.concat(nameObject))
-      setNewName('')
-      setNewNumber('')
+      personService
+      .update(updatedPerson.id, changedNumber)
+      .then(response => {setPersons(persons.map(name => name.id !== updatedPerson.id ? name: response))})
+      
+    } else {  
+        personService
+        .create(nameObject)
+        .then(response => {
+          console.log(response)
+          setNewName('')
+          setNewNumber('')
+          personService
+          .getAll()
+          .then(updatedPersons => {
+            setPersons(updatedPersons)
+            setSuccessMessage(`Added ${newName}`)
+        })
+
+        
+      })
+      
+     
+
+      
     } 
   }
   
-  const handleNumberChange = (event) => {
-    console.log('phnu', event.target.value)
-    setNewNumber(event.target.value)
+  const deleteName = (id) => {
+    console.log('person id', persons.filter(person => person.id == id)[0].name)
+    if (window.confirm(`Delete  ${persons.filter(person => person.id == id)[0].name} ?`) )
+    
+    personService
+    .remove(id)
+    .then(response => {
+      console.log(response)
+      setPersons(persons.filter(person => person.id !== id))
+      
+    })
   }
+
+  console.log('mapped id', persons.map(person => person.id))
+
+
  
   const handleFilter = (event) => {
     console.log('filteri', event.target.value)
@@ -107,9 +156,15 @@ const App = () => {
 
   }
 
+  const handleNumberChange = (event) => {
+    console.log('')
+    setNewNumber(event.target.value)
+  }
+
   return (
     <div>
       <h2>Phonebook</h2>
+      <Notification message = {success} />
       <Filter input = {newFilter} handleChange = {handleFilter} />
       <h2>Add a new </h2>
       <PersonForm formTrigger = {addName}
@@ -117,12 +172,16 @@ const App = () => {
                   inputNumber = {newNumber}
                   personChange = {handleNameChange}
                   numberChange = {handleNumberChange}
+                  
+                  
         />
     
       <h2>Numbers</h2>
   
        
-      <Persons persons = {persons} appliedFilter = {newFilter} />
+      <Persons persons = {persons} 
+      appliedFilter = {newFilter}
+      removePerson = {deleteName} />
       
     </div>
   )
