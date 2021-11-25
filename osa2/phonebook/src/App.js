@@ -1,67 +1,21 @@
 import React, { useState, useEffect } from 'react'
-import axios from 'axios'
 import personService from './services/persons'
+import Filter from './components/Filter'
+import Persons from './components/Persons'
+import PersonForm from './components/PersonForm'
+import Notif from './components/Notif'
 
-
-const Notification = ({ message }) => {
-  if (message === null ) {
+const Error = ( {message} ) => {
+  if (message === null) {
     return null
   }
-
-  return (
-    <div className = "success">
-      {message}
+  return(
+    <div className ="error">
+    {message}
     </div>
   )
 }
 
-
-
-const Filter = ({input, handleChange}) =>
-{
-  return(
-    <div>
-      filter shown with 
-      <input value = {input} onChange = {handleChange} />
-
-    </div>
-
-  )
-}
-
-
-const PersonForm = ({ formTrigger, inputName, inputNumber, personChange, numberChange, handleExisting}) => {
-
-  return(
-    <div>
-      <form onSubmit = {formTrigger} >
-        <div>
-          name: <input value = {inputName} onChange = {personChange}/>
-        </div>
-        <div>
-          number: <input value = {inputNumber} onChange = {numberChange}/>
-        </div>
-        <div>
-          <button type="submit">add</button>
-        </div>
-      </form>
-    </div>
-
-  )
-}
-
-const Persons = ({ persons, appliedFilter, removePerson }) => {
-  console.log('passed persons', persons.filter(person => person.name.toLowerCase().includes(appliedFilter.toLowerCase())))
-  return(
-     <div>
-       {persons.filter(person => person.name.toLowerCase().includes(appliedFilter.toLowerCase())).map(person =>
-          <div key = {person.name}> 
-          {person.name} {person.number}
-          <button onClick = {()=> removePerson(person.id)}> delete</button> </div> )}
-     </div>
-
-  )
-}
 
 const App = () => {
   //initial state, phonebook with one entry
@@ -70,6 +24,7 @@ const App = () => {
   const [ newNumber, setNewNumber ] = useState('')
   const [ newFilter, setNewFilter ] = useState('')
   const [ success, setSuccessMessage ] = useState(null)
+  const [errorMessage, setErrorMessage ] = useState(null)
   console.log('persons', persons)
   console.log('iftest', persons.map(person => person.name).includes('Arto Hellas'))
 
@@ -101,12 +56,22 @@ const App = () => {
       const updatedPerson = persons.find(p => p.name === newName)
       const changedNumber = {...updatedPerson, number: newNumber}
       
-      setNewName('')
-      setNewNumber('')
       personService
       .update(updatedPerson.id, changedNumber)
-      .then(response => {setPersons(persons.map(name => name.id !== updatedPerson.id ? name: response))})
-      
+      .then(response => {setPersons(persons.map(name => name.id !== updatedPerson.id ? name: response))
+        setSuccessMessage(`Changed number for ${newName}`)
+        setTimeout(() => {
+          setSuccessMessage(null)
+        }, 2000)
+       })
+        .catch(error => {
+        setErrorMessage(
+          `Information of ${updatedPerson.name} was already removed from server `
+        )
+        setTimeout(() => {
+          setErrorMessage(null)
+        }, 3000)
+      })
     } else {  
         personService
         .create(nameObject)
@@ -119,10 +84,22 @@ const App = () => {
           .then(updatedPersons => {
             setPersons(updatedPersons)
             setSuccessMessage(`Added ${newName}`)
-        })
+            setTimeout(() => {
+              setSuccessMessage(null)
+            }, 2000)
+            
+
+        }) 
 
         
       })
+      .catch(error => {
+        setErrorMessage(`${newName} was already removed from server`)
+        setTimeout(() => {
+          setErrorMessage(null)
+        }, 2000)
+      })
+   
       
      
 
@@ -131,8 +108,8 @@ const App = () => {
   }
   
   const deleteName = (id) => {
-    console.log('person id', persons.filter(person => person.id == id)[0].name)
-    if (window.confirm(`Delete  ${persons.filter(person => person.id == id)[0].name} ?`) )
+    console.log('person id', persons.filter(person => person.id === id)[0].name)
+    if (window.confirm(`Delete  ${persons.filter(person => person.id === id)[0].name} ?`) )
     
     personService
     .remove(id)
@@ -164,7 +141,8 @@ const App = () => {
   return (
     <div>
       <h2>Phonebook</h2>
-      <Notification message = {success} />
+      <Notif message = {success} />
+      <Error message = {errorMessage} />
       <Filter input = {newFilter} handleChange = {handleFilter} />
       <h2>Add a new </h2>
       <PersonForm formTrigger = {addName}
