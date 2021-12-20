@@ -4,7 +4,8 @@ const app = express()
 app.use(express.json())
 var time = require('express-timestamp')
 app.use(time.init)
-
+const morgan = require('morgan')
+app.use(morgan)
 let persons = [
   { 
     "id": 1,
