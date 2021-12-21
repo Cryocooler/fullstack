@@ -5,7 +5,9 @@ app.use(express.json())
 var time = require('express-timestamp')
 app.use(time.init)
 const morgan = require('morgan')
-app.use(morgan)
+app.use(morgan("tiny"))
+
+
 let persons = [
   { 
     "id": 1,
@@ -70,17 +72,15 @@ const generateId = () => {
 
 app.post('/api/person', (request, response) => {
   const body = request.body
+  console.log('persons', persons.filter(person => person.name === body.name))
 
-  if (!body.content) {
-    return response.status(400).json({ 
-      error: 'content missing' 
-    })
-  } else if (!body.number || !body.name) {
+  
+  if (!body.number || !body.name) {
     return response.status(400).json({ 
       error: 'name or number missing' 
     })
 
-  } else if (persons.filter(person => person.name === body.name)) {
+  } else if (persons.map(person => person.name).includes(body.name)) {
     return response.status(400).json({
       error: "name must be unique"
     })
