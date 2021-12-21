@@ -26,7 +26,7 @@ const App = () => {
   const [ success, setSuccessMessage ] = useState(null)
   const [errorMessage, setErrorMessage ] = useState(null)
   console.log('persons', persons)
-  console.log('iftest', persons.map(person => person.name).includes('Arto Hellas'))
+  
 
 
   useEffect(() => {
@@ -52,6 +52,7 @@ const App = () => {
       number : newNumber
     }
     if (persons.map(person => person.name).includes(newName)) {
+      console.log('IF STATEMENT OF EXISTING TRIGGERED')
       window.confirm(`${newName} is already added to phonebook, do you want to relace the old number with a new one?`)
       const updatedPerson = persons.find(p => p.name === newName)
       const changedNumber = {...updatedPerson, number: newNumber}
@@ -63,6 +64,8 @@ const App = () => {
         setTimeout(() => {
           setSuccessMessage(null)
         }, 2000)
+        setNewName('')
+        setNewNumber('')
        })
         .catch(error => {
         setErrorMessage(
@@ -73,6 +76,7 @@ const App = () => {
         }, 3000)
       })
     } else {  
+      console.log('PERSON DOES NOT EXIST, ADD')
         personService
         .create(nameObject)
         .then(response => {
@@ -98,6 +102,8 @@ const App = () => {
         setTimeout(() => {
           setErrorMessage(null)
         }, 2000)
+        setNewName('')
+        setNewNumber('')
       })
    
       

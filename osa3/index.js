@@ -1,11 +1,19 @@
 const http = require('http')
 const express = require('express')
 const app = express()
+const cors = require('cors')
+app.use(cors())
 app.use(express.json())
 var time = require('express-timestamp')
 app.use(time.init)
 const morgan = require('morgan')
-app.use(morgan("tiny"))
+//app.use(morgan("tiny"))
+
+morgan.token('pb', (req, res) => {
+  if(req.method === 'POST') return JSON.stringify(req.body)
+})
+app.use(morgan(':method :url :status :res[content-length] - :response-time ms :pb'))
+
 
 
 let persons = [
@@ -70,9 +78,12 @@ const generateId = () => {
   return Math.floor(Math.random() * (100-10) + 10)
 }
 
-app.post('/api/person', (request, response) => {
+
+//add new person
+
+app.post('/api/persons', (request, response) => {
   const body = request.body
-  console.log('persons', persons.filter(person => person.name === body.name))
+  //console.log('persons', persons.filter(person => person.name === body.name))
 
   
   if (!body.number || !body.name) {
